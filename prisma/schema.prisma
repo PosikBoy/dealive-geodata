@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum BeltwayHit {
+  IN_MKAD
+ OUT_MKAD 
+ IN_KAD
+ OUT_KAD
+}
+
+model Addresses {
+  id  Int @id @default(autoincrement())
+  address String @unique
+  geoLat String? @map("geo_lat")
+  geoLon String? @map("geo_lon")
+  qcGeo Int @map("qc_geo")
+  createdAt DateTime @default(now()) @map("created_at")
+  beltwayHit BeltwayHit? @map("beltway_hit")
+  beltwayDistance Int? @map("beltway_distance")
+  metro       Json?     // Станции метро в формате JSON
+  queries     AddressQueries[]
+  @@index([geoLat, geoLon])
+
+  @@map("addresses")
+}
+
+model AddressQueries {
+  id          Int       @id @default(autoincrement())
+  query       String    @unique // Вариант поискового запроса
+  addressId   Int       // Внешний ключ
+  address     Addresses @relation(fields: [addressId], references: [id], onDelete: Cascade)
+
+  @@index([query]) // Индекс для быстрого поиска по запросу
+  @@map("address_queries")
+}
+
