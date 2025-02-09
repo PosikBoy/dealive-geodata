@@ -98,7 +98,6 @@ export class GeodataService {
         })
       );
       this.queryNumber++;
-      console.log("result", JSON.stringify(result.data));
       if (result.data[0].result == null) {
         throw new NotFoundException(messages.ADDRESS_NOT_FOUND + " " + address);
       }

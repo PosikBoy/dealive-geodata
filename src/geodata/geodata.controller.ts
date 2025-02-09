@@ -8,7 +8,6 @@ export class GeodataController {
 
   @Post("")
   async getCoordinatesByAddressArray(@Body() addressBody: GetByDataDto[]) {
-    console.log(addressBody);
     return Promise.all(
       addressBody.map((address) =>
         this.geodataService.getCoordinatesByAddress(address.address)

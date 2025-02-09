@@ -26,7 +26,6 @@ export class GeoDataDto {
     this.geoLon = address.geoLon;
     this.qcGeo = address.qcGeo;
     const metroJson = address.metro as string | null;
-    console.log(metroJson);
     this.metro = metroJson as unknown as IMetro[];
     this.beltwayHit = address.beltwayHit;
     this.beltwayDistance = address.beltwayDistance;
