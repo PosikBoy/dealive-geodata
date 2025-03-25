@@ -11,4 +11,4 @@ ENV SERVER_URL http://localhost:5000
 RUN npm run build
 
 EXPOSE 5001
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start:prod"]
