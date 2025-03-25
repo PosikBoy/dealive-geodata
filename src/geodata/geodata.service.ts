@@ -1,26 +1,38 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "src/prisma.service";
-import messages from "src/constants/messages";
 import { HttpService } from "@nestjs/axios";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { firstValueFrom } from "rxjs";
+import messages from "src/constants/messages";
 import urls from "src/constants/urls";
+import { PrismaService } from "src/prisma.service";
+import { RedisService } from "src/redis/redis.service";
 import { GeoDataDto } from "./dtos/get-by-data.dto";
 
 @Injectable()
 export class GeodataService {
   constructor(
     private prisma: PrismaService,
-    private readonly httpService: HttpService
+    private readonly httpService: HttpService,
+    private readonly redisService: RedisService
   ) {
     this.token = process.env.DADATA_KEY;
     this.secret = process.env.DADATA_SECRET;
   }
+
   token: string;
   secret: string;
   queryNumber = 1;
+
   async getCoordinatesByAddress(address: string) {
+    const cachedData = await this.redisService.get<GeoDataDto>(
+      `geodata:address:${address}`
+    );
+
+    if (cachedData) {
+      // console.log("Возвращаем данные из кеша", cachedData.address);
+      return cachedData; // Возвращаем данные из кеша
+    }
+
     try {
-      // Ищем адрес в базе данных
       const existingAddressByQuery = await this.prisma.addressQueries.findFirst(
         {
           where: {
@@ -33,6 +45,12 @@ export class GeodataService {
       );
 
       if (existingAddressByQuery) {
+        await this.redisService.set<GeoDataDto>(
+          `geodata:address:${address}`,
+          new GeoDataDto(existingAddressByQuery.address),
+          60
+        ); //1h
+        console.log("Закешировали данные в редисе");
         return new GeoDataDto(existingAddressByQuery.address);
       }
 
@@ -56,11 +74,18 @@ export class GeodataService {
             addressId: existingAddressInBd.id, // Ссылаемся на существующий адрес
           },
         });
+
+        await this.redisService.set<GeoDataDto>(
+          `geodata:address:${address}`,
+          new GeoDataDto(existingAddressInBd),
+          60
+        );
+        console.log("Закешировали данные в редисе");
+
         return new GeoDataDto(existingAddressInBd);
       }
       //Если не было ни в списке запросов, ни в списке адресов
       const newAddress = await this.prisma.addresses.create({
-        // Сохраняем в базу
         data: {
           address: addressData.result,
           geoLat: addressData.geo_lat,
@@ -77,6 +102,12 @@ export class GeodataService {
         },
       });
 
+      await this.redisService.set<GeoDataDto>(
+        `geodata:address:${address}`,
+        new GeoDataDto(newAddress),
+        60
+      ); //1h
+      console.log("Закешировали данные в редисе");
       return new GeoDataDto(newAddress);
     } catch (error) {
       console.log(
