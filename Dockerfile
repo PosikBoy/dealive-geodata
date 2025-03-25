@@ -1,14 +1,19 @@
-FROM node:23-alpine3.20
+FROM node:18-alpine
+
 WORKDIR /app
 
-COPY package*.json .
+# Установка зависимостей Prisma
+RUN apk add --no-cache openssl
 
-RUN npm ci
+COPY package*.json ./
+RUN npm install
+
+COPY prisma ./prisma
+RUN npx prisma generate
 
 COPY . .
-
-ENV SERVER_URL http://localhost:5000
 RUN npm run build
 
 EXPOSE 5001
+
 CMD ["npm", "run", "start:prod"]
