@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "src/prisma.service";
-import messages from "src/constants/messages";
 import { HttpService } from "@nestjs/axios";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { firstValueFrom } from "rxjs";
+import messages from "src/constants/messages";
 import urls from "src/constants/urls";
+import { PrismaService } from "src/prisma.service";
 import { GeoDataDto } from "./dtos/get-by-data.dto";
 
 @Injectable()
