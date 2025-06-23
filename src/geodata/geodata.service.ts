@@ -28,7 +28,6 @@ export class GeodataService {
     );
 
     if (cachedData) {
-      // console.log("Возвращаем данные из кеша", cachedData.address);
       return cachedData; // Возвращаем данные из кеша
     }
 
@@ -50,7 +49,6 @@ export class GeodataService {
           new GeoDataDto(existingAddressByQuery.address),
           60
         ); //1h
-        console.log("Закешировали данные в редисе");
         return new GeoDataDto(existingAddressByQuery.address);
       }
 
@@ -80,7 +78,6 @@ export class GeodataService {
           new GeoDataDto(existingAddressInBd),
           60
         );
-        console.log("Закешировали данные в редисе");
 
         return new GeoDataDto(existingAddressInBd);
       }
@@ -107,7 +104,6 @@ export class GeodataService {
         new GeoDataDto(newAddress),
         60
       ); //1h
-      console.log("Закешировали данные в редисе");
       return new GeoDataDto(newAddress);
     } catch (error) {
       console.log(
