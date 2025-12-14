@@ -9,7 +9,7 @@ import { RedisModule } from "./redis/redis.module";
     RedisModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `.env`,
+      envFilePath: `.env.{process.env.NODE_ENV}`,
     }),
   ],
   controllers: [],
