@@ -1,5 +1,5 @@
 services:
-  backend:
+  geodata:
     container_name: geodata
     build: ./
     env_file:
@@ -23,7 +23,7 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: backend_redis
+    container_name: geodata_redis
     expose:
       - "6379"
 
@@ -42,7 +42,7 @@ services:
       retries: 5
 
   mysql:
-    container_name: mysql
+    container_name: geodata_mysql
     image: mysql:8.0
     expose:
       - "3306"
@@ -66,7 +66,7 @@ services:
       timeout: 10s
       retries: 10
     networks:
-      - backend-internal
+      - geodata-internal
 
 volumes:
   db_data:
