@@ -1,0 +1,79 @@
+services:
+  backend:
+    container_name: geodata
+    build: ./
+    env_file:
+      - .env.production
+
+    expose:
+      - "5000"
+
+    restart: always
+
+    networks:
+      - app-network
+      - geodata-internal
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:alpine
+    container_name: backend_redis
+    expose:
+      - "6379"
+
+    volumes:
+      - redis_data:/data
+
+    networks:
+      - geodata-internal
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mysql:
+    container_name: mysql
+    image: mysql:8.0
+    expose:
+      - "3306"
+
+    env_file:
+      - ./.env.production
+
+    volumes:
+      - ./dump.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_data:/var/lib/mysql
+
+    restart: unless-stopped
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -u root -p$$MYSQL_ROOT_PASSWORD || exit 1",
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - backend-internal
+
+volumes:
+  db_data:
+  redis_data:
+
+networks:
+  app-network:
+    external: true
+  geodata-internal:
+    driver: bridge
